@@ -1,0 +1,58 @@
+esphome:
+  name: esp32_s3_display
+  platform: esp32
+  board: esp32-s3-devkitc-1
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "f29o8Z+EEDuZS1tCF1Tqi6exl1PefuCo9fxce99oeg0="
+
+ota:
+  - platform: esphome
+    password: "7226b4fa8da5ba6a4275e8eca8feb975"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Crowpanel-7-Advance"
+    password: "e0lnnIgp83Fr"
+
+captive_portal:
+    
+# Habilitar I²C para el Touch GT911
+i2c:
+  sda: 15
+  scl: 16
+  scan: true
+
+external_components:
+  - source: github://diybateriaslifepo4/Crowpanel-Advance-7
+    refresh: 0s
+#  - source: my_components
+
+spi:
+  clk_pin: GPIO6
+  mosi_pin: GPIO7
+  miso_pin: GPIO8
+
+display:
+  - platform: sc7277
+    id: my_display
+    update_interval: 100ms
+
+# Configurar el Touch GT911
+touchscreen:
+  platform: gt911
+  id: touch_gt911
+  interrupt_pin: GPIO17
+  reset_pin: GPIO18
+  on_touch:
+    - lambda: |-
+        ESP_LOGI("touch", "Touch detected at (%d, %d)", x, y);

@@ -11,14 +11,12 @@ SC7277Display = sc7277_ns.class_(
 )
 
 # Esta es la clave: registramos el componente para la plataforma "sc7277"
-display.DISPLAY_PLATFORM_SCHEMA = cv.schema_extender(
-    display.DISPLAY_PLATFORM_SCHEMA, lambda: cv.Schema({
-        cv.GenerateID(CONF_ID): cv.declare_id(SC7277Display),
-    })
-)
+DISPLAY_PLATFORM_SCHEMA = display.FULL_DISPLAY_SCHEMA.extend({
+    cv.GenerateID(CONF_ID): cv.declare_id(SC7277Display),
+})
 
 CONFIG_SCHEMA = cv.All(
-    display.FULL_DISPLAY_SCHEMA.extend({
+    DISPLAY_PLATFORM_SCHEMA.extend({
         cv.GenerateID(): cv.declare_id(SC7277Display),
     }).extend(cv.COMPONENT_SCHEMA)
 )
