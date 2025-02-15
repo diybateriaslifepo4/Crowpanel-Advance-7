@@ -7,7 +7,7 @@ DEPENDENCIES = ["spi"]
 
 sc7277_ns = cg.esphome_ns.namespace("sc7277")
 SC7277Display = sc7277_ns.class_(
-    "SC7277Display", cg.PollingComponent, display.DisplayBuffer
+    "SC7277Display", cg.Component, cg.PollingComponent, display.DisplayBuffer
 )
 
 # Esta es la clave: registramos el componente para la plataforma "sc7277"

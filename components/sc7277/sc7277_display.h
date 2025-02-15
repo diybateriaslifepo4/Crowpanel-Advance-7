@@ -7,7 +7,7 @@
 namespace esphome {
 namespace sc7277 {
 
-class SC7277Display : public PollingComponent, public display::DisplayBuffer {
+class SC7277Display : public Component, public PollingComponent, public display::DisplayBuffer {
  public:
   SC7277Display() : PollingComponent(16), DisplayBuffer(800, 480) {}
 
