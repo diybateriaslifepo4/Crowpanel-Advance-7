@@ -1,13 +1,13 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import display
-from esphome.const import CONF_ID
+from esphome.const import CONF_ID, ESPHOME_VERSION
 
 DEPENDENCIES = ["spi"]
 
 sc7277_ns = cg.esphome_ns.namespace("sc7277")
 SC7277Display = sc7277_ns.class_(
-    "SC7277Display", cg.PollingComponent, display.DisplayBuffer
+    "SC7277Display", display.DisplayBuffer
 )
 
 # Esta es la clave: registramos el componente para la plataforma "sc7277"
@@ -23,5 +23,6 @@ CONFIG_SCHEMA = cv.All(
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-    await cg.register_component(var, config)
+    if cv.Version.parse(ESPHOME_VERSION) < cv.Version.parse("2023.12.0"):
+        await cg.register_component(var, config)
     await display.register_display(var, config)
