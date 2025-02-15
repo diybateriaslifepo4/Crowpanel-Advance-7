@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.components import display
-from esphome.const import CONF_ID, ESPHOME_VERSION
+from esphome.const import CONF_ID
 
 DEPENDENCIES = ["spi"]
 
@@ -23,6 +23,5 @@ CONFIG_SCHEMA = cv.All(
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-    if cv.Version.parse(ESPHOME_VERSION) < cv.Version.parse("2023.12.0"):
-        await cg.register_component(var, config)
+    await cg.register_component(var, config)
     await display.register_display(var, config)
