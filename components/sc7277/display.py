@@ -18,7 +18,7 @@ display.DISPLAY_PLATFORM_SCHEMA = cv.schema_extender(
 )
 
 CONFIG_SCHEMA = cv.All(
-    display.BASIC_DISPLAY_SCHEMA.extend({
+    display.FULL_DISPLAY_SCHEMA.extend({
         cv.GenerateID(): cv.declare_id(SC7277Display),
     }).extend(cv.COMPONENT_SCHEMA)
 )
