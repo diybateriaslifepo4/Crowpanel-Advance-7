@@ -1,21 +1,27 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import display, spi
+from esphome.components import display
 from esphome.const import CONF_ID
 
 DEPENDENCIES = ["spi"]
-CODEOWNERS = ["@tu_usuario_github"]
 
 sc7277_ns = cg.esphome_ns.namespace("sc7277")
 SC7277Display = sc7277_ns.class_(
     "SC7277Display", cg.PollingComponent, display.DisplayBuffer
 )
 
-CONFIG_SCHEMA = display.BASIC_DISPLAY_SCHEMA.extend(
-    {
+# Esta es la clave: registramos el componente para la plataforma "sc7277"
+display.DISPLAY_PLATFORM_SCHEMA = cv.schema_extender(
+    display.DISPLAY_PLATFORM_SCHEMA, lambda: cv.Schema({
+        cv.GenerateID(CONF_ID): cv.declare_id(SC7277Display),
+    })
+)
+
+CONFIG_SCHEMA = cv.All(
+    display.BASIC_DISPLAY_SCHEMA.extend({
         cv.GenerateID(): cv.declare_id(SC7277Display),
-    }
-).extend(cv.polling_component_schema("100ms"))
+    }).extend(cv.COMPONENT_SCHEMA)
+)
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
