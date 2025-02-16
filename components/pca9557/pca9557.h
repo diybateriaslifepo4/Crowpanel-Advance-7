@@ -15,12 +15,12 @@ class PCA9557Output : public esphome::Component, public esphome::i2c::I2CDevice,
     esphome::delay(500); // Espera 500ms para dar tiempo a la inicialización del touchpad
     // Configure all pins as outputs (register 0x03)
     uint8_t config_data[2] = {0x03, 0x00};
-    if (!this->i2c_write_array(config_data, 2)) {
+    if (!this->write_array(config_data, 2)) {
       ESP_LOGE("PCA9557", "Failed to configure pins as outputs");
     }
     // Set initial state to all off (register 0x01)
     uint8_t output_data[2] = {0x01, 0x00};
-    if (!this->i2c_write_array(output_data, 2)) {
+    if (!this->write_array(output_data, 2)) {
       ESP_LOGE("PCA9557", "Failed to set initial state");
     }
   }
@@ -28,7 +28,7 @@ class PCA9557Output : public esphome::Component, public esphome::i2c::I2CDevice,
   void write_state(float state) override {
     uint8_t current_state;
     // Read current state (register 0x00)
-    if (!this->i2c_read_byte(0x00, &current_state)) {
+    if (!this->read_byte(0x00, &current_state)) {
       ESP_LOGE("PCA9557", "Failed to read current state");
       return;
     }
@@ -42,7 +42,7 @@ class PCA9557Output : public esphome::Component, public esphome::i2c::I2CDevice,
 
     // Write new state (register 0x01)
     uint8_t output_data[2] = {0x01, current_state};
-    if (!this->i2c_write_array(output_data, 2)) {
+    if (!this->write_array(output_data, 2)) {
       ESP_LOGE("PCA9557", "Failed to write new state");
     }
   }
