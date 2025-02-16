@@ -75,7 +75,7 @@ i2c:
   sda: 15
   scl: 16
   # scan removed to prevent interferencia con el touchscreen
-  frequency: 400000
+  frequency: 100000  # Se reduce de 400000 a 100000 para mayor estabilidad
 
 # Configure the GT911 touchscreen
 touchscreen:
