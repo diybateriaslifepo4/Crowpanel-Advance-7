@@ -7,7 +7,6 @@ namespace esphome {
 
 #include "esphome.h"
 #include "esphome/components/i2c/i2c.h"
-// Removed: #include "esphome/core/hal/i2c.h"  // No such file, base header already provides I2CMaster.
 #include "esphome/components/output/float_output.h"
 
 // Make sure the ESP logging function is visible in this namespace.
@@ -19,11 +18,6 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
  public:
   PCA9557Output(uint8_t address = 0x18) : esphome::i2c::I2CDevice() { 
     this->address_ = address; 
-  }
-
-  // Add custom set_i2c_master to store the pointer.
-  void set_i2c_master(esphome::i2c::I2CMaster *master) {
-    this->i2c_master_ = master;
   }
 
   void setup() override {
@@ -57,21 +51,16 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
 
  protected:
   uint8_t address_;
-  // Add custom pointer to store the I2C master.
-  esphome::i2c::I2CMaster *i2c_master_ = nullptr;
-
+  
+  // Llamamos a los métodos de I2CDevice directamente en lugar de usar un puntero propio.
   bool write_array(const uint8_t *data, size_t len) {
-    if (this->i2c_master_ == nullptr)
-      return false;
-    return this->i2c_master_->write_array(this->address_, data, len);
+    return I2CDevice::write_array(this->address_, data, len);
   }
 
   bool read_byte(uint8_t reg, uint8_t *data) {
-    if (this->i2c_master_ == nullptr)
+    if (!I2CDevice::write(this->address_, &reg, 1, true))
       return false;
-    if (!this->i2c_master_->write(this->address_, &reg, 1, true))
-      return false;
-    return this->i2c_master_->read(this->address_, data, 1);
+    return I2CDevice::read(this->address_, data, 1);
   }
 };
 
