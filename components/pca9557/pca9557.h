@@ -14,6 +14,11 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
     this->address_ = address; 
   }
 
+  // This method will be called by the I2C infrastructure.
+  void set_i2c_master(esphome::i2c::I2CMaster *master) override {
+    this->i2c_master_ = master;
+  }
+
   void setup() override {
     esphome::delay(500); // Espera 500ms para dar tiempo a la inicialización del touchpad
     // Configure all pins as outputs (register 0x03)
@@ -52,24 +57,23 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
 
  protected:
   uint8_t address_;
+  esphome::i2c::I2CMaster *i2c_master_ = nullptr; // New member variable
 
   // Helper function to write an array of bytes to the device.
   bool write_array(const uint8_t *data, size_t len) {
-    auto master = this->get_i2c_master();
-    if (master == nullptr)
+    if (this->i2c_master_ == nullptr)
       return false;
-    return master->write_array(this->address_, data, len);
+    return this->i2c_master_->write_array(this->address_, data, len);
   }
 
   // Helper function to read a single byte from a register.
   bool read_byte(uint8_t reg, uint8_t *data) {
-    auto master = this->get_i2c_master();
-    if (master == nullptr)
+    if (this->i2c_master_ == nullptr)
       return false;
     // Write the register address with a repeated start.
-    if (!master->write(this->address_, &reg, 1, true))
+    if (!this->i2c_master_->write(this->address_, &reg, 1, true))
       return false;
-    return master->read(this->address_, data, 1);
+    return this->i2c_master_->read(this->address_, data, 1);
   }
 };
 
