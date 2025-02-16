@@ -74,7 +74,7 @@ logger:
 i2c:
   sda: 15
   scl: 16
-  scan: true
+  # scan removed to prevent interferencia con el touchscreen
   frequency: 400000
 
 # Configure the GT911 touchscreen
