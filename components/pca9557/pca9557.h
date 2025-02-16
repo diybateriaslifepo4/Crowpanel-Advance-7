@@ -2,6 +2,8 @@
 namespace esphome {
   namespace i2c {
     class I2CMaster;
+    // Aseguramos que exista este valor según la implementación de esphome.
+    static const int ERROR_OK = 0;
   }
 }
 
@@ -52,15 +54,15 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
  protected:
   uint8_t address_;
   
-  // Llamamos a los métodos de I2CDevice directamente en lugar de usar un puntero propio.
+  // Se usan los métodos write() y read() de I2CDevice sin pasar la dirección (ya está almacenada en la clase base).
   bool write_array(const uint8_t *data, size_t len) {
-    return I2CDevice::write_array(this->address_, data, len);
+    return this->write(data, len, true) == esphome::i2c::ERROR_OK;
   }
 
   bool read_byte(uint8_t reg, uint8_t *data) {
-    if (!I2CDevice::write(this->address_, &reg, 1, true))
+    if (this->write(&reg, 1, true) != esphome::i2c::ERROR_OK)
       return false;
-    return I2CDevice::read(this->address_, data, 1);
+    return this->read(data, 1) == esphome::i2c::ERROR_OK;
   }
 };
 
