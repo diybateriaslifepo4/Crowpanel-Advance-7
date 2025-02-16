@@ -1,10 +1,3 @@
-// Add forward declaration for I2CMaster
-namespace esphome {
-  namespace i2c {
-    class I2CMaster;
-  }
-}
-
 #include "esphome.h"
 #include "esphome/components/i2c/i2c.h"
 #include "esphome/components/output/float_output.h"
@@ -22,7 +15,7 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
   }
 
   // This method will be called by the I2C infrastructure.
-  void set_i2c_master(esphome::i2c::I2CMaster *master) override {
+  void set_i2c_master(esphome::i2c::I2CMaster *master) {
     this->i2c_master_ = master;
   }
 
