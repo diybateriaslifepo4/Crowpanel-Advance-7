@@ -1,10 +1,10 @@
 #include "esphome.h"
-#include "esphome/components/output/float_output.h"
 #include "esphome/components/i2c/i2c.h"
+#include "esphome/components/output/float_output.h"
 
 namespace pca9557 {
 
-class PCA9557Output : public esphome::Component, public esphome::i2c::I2CDevice, public esphome::output::FloatOutput {
+class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component, public esphome::output::FloatOutput {
  public:
   // Use default base constructor and assign the address locally.
   PCA9557Output(uint8_t address = 0x18) : esphome::i2c::I2CDevice() { 
