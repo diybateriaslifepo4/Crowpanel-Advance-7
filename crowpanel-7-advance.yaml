@@ -85,9 +85,6 @@ touchscreen:
   on_touch:
     then:
     - logger.log: "Detectando toque en la pantalla"
-  #       - lambda: |-
-  #           ESP_LOGI("touch", "Touch detected at (%d, %d)", touch.x, touch.y);
-  #       - light.toggle: back_light
 
 output:
   - platform: pca9557
