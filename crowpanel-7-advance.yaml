@@ -82,9 +82,11 @@ touchscreen:
   platform: gt911
   id: touch_gt911
   address: 0x5D
+  reset_pin: GPIO2       # Usar PCA_IO2_TP_RST según el schematic (ajusta si es necesario)
+  interrupt_pin: GPIO1   # Usar IO1_TP_INT según el schematic (ajusta si es necesario)
   on_touch:
     then:
-    - logger.log: "Detectando toque en la pantalla"
+      - logger.log: "Detectando toque en la pantalla"
 
 output:
   - platform: pca9557
