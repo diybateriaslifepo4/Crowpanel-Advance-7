@@ -2,6 +2,9 @@
 #include "esphome/components/i2c/i2c.h"
 #include "esphome/components/output/float_output.h"
 
+// Make sure the ESP logging function is visible in this namespace.
+using esphome::esp_log_printf_;
+
 namespace pca9557 {
 
 class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component, public esphome::output::FloatOutput {
@@ -52,19 +55,21 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
 
   // Helper function to write an array of bytes to the device.
   bool write_array(const uint8_t *data, size_t len) {
-    if (this->i2c_master_ == nullptr)
+    auto master = this->get_i2c_master();
+    if (master == nullptr)
       return false;
-    return this->i2c_master_->write_array(this->address_, data, len);
+    return master->write_array(this->address_, data, len);
   }
 
   // Helper function to read a single byte from a register.
   bool read_byte(uint8_t reg, uint8_t *data) {
-    if (this->i2c_master_ == nullptr)
+    auto master = this->get_i2c_master();
+    if (master == nullptr)
       return false;
     // Write the register address with a repeated start.
-    if (!this->i2c_master_->write(this->address_, &reg, 1, true))
+    if (!master->write(this->address_, &reg, 1, true))
       return false;
-    return this->i2c_master_->read(this->address_, data, 1);
+    return master->read(this->address_, data, 1);
   }
 };
 
