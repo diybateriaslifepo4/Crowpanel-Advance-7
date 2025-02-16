@@ -2,8 +2,7 @@
 namespace esphome {
   namespace i2c {
     class I2CMaster;
-    // Aseguramos que exista este valor según la implementación de esphome.
-    static const int ERROR_OK = 0;
+    // Se eliminó la redeclaración de ERROR_OK, ya que existe en i2c_bus.h.
   }
 }
 
@@ -54,7 +53,7 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
  protected:
   uint8_t address_;
   
-  // Se usan los métodos write() y read() de I2CDevice sin pasar la dirección (ya está almacenada en la clase base).
+  // Se usan los métodos write() y read() de I2CDevice sin pasar la dirección.
   bool write_array(const uint8_t *data, size_t len) {
     return this->write(data, len, true) == esphome::i2c::ERROR_OK;
   }
