@@ -1,5 +1,6 @@
 #include "esphome.h"
 #include "esphome/components/i2c/i2c.h"
+#include "esphome/core/hal/i2c.h"  // Added to fully declare I2CMaster
 #include "esphome/components/output/float_output.h"
 
 // Make sure the ESP logging function is visible in this namespace.
@@ -14,10 +15,7 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
     this->address_ = address; 
   }
 
-  // This method will be called by the I2C infrastructure.
-  void set_i2c_master(esphome::i2c::I2CMaster *master) {
-    this->i2c_master_ = master;
-  }
+  // Removed custom set_i2c_master; using the base class implementation.
 
   void setup() override {
     esphome::delay(500); // Espera 500ms para dar tiempo a la inicialización del touchpad
@@ -57,7 +55,7 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
 
  protected:
   uint8_t address_;
-  esphome::i2c::I2CMaster *i2c_master_ = nullptr; // New member variable
+  // Removed custom i2c_master_ since it's inherited from I2CDevice.
 
   // Helper function to write an array of bytes to the device.
   bool write_array(const uint8_t *data, size_t len) {
