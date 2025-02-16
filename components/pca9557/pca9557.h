@@ -1,6 +1,6 @@
 #include "esphome.h"
 #include "esphome/components/i2c/i2c.h"
-#include "esphome/core/hal/i2c.h"  // Added to fully declare I2CMaster
+// Removed: #include "esphome/core/hal/i2c.h"  // No such file, base header already provides I2CMaster.
 #include "esphome/components/output/float_output.h"
 
 // Make sure the ESP logging function is visible in this namespace.
@@ -10,21 +10,16 @@ namespace pca9557 {
 
 class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component, public esphome::output::FloatOutput {
  public:
-  // Use default base constructor and assign the address locally.
   PCA9557Output(uint8_t address = 0x18) : esphome::i2c::I2CDevice() { 
     this->address_ = address; 
   }
 
-  // Removed custom set_i2c_master; using the base class implementation.
-
   void setup() override {
     esphome::delay(500); // Espera 500ms para dar tiempo a la inicialización del touchpad
-    // Configure all pins as outputs (register 0x03)
     uint8_t config_data[2] = {0x03, 0x00};
     if (!write_array(config_data, 2)) {
       ESP_LOGE("PCA9557", "Failed to configure pins as outputs");
     }
-    // Set initial state to all off (register 0x01)
     uint8_t output_data[2] = {0x01, 0x00};
     if (!write_array(output_data, 2)) {
       ESP_LOGE("PCA9557", "Failed to set initial state");
@@ -33,20 +28,15 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
 
   void write_state(float state) override {
     uint8_t current_state;
-    // Read current state (register 0x00)
     if (!read_byte(0x00, &current_state)) {
       ESP_LOGE("PCA9557", "Failed to read current state");
       return;
     }
-
-    // Update pin 1 (backlight) while preserving other pins
     if (state > 0.5f) {
-      current_state |= (1 << 1);  // Set pin 1 high
+      current_state |= (1 << 1);
     } else {
-      current_state &= ~(1 << 1); // Set pin 1 low
+      current_state &= ~(1 << 1);
     }
-
-    // Write new state (register 0x01)
     uint8_t output_data[2] = {0x01, current_state};
     if (!write_array(output_data, 2)) {
       ESP_LOGE("PCA9557", "Failed to write new state");
@@ -55,20 +45,16 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
 
  protected:
   uint8_t address_;
-  // Removed custom i2c_master_ since it's inherited from I2CDevice.
-
-  // Helper function to write an array of bytes to the device.
+  // i2c_master_ is inherited from I2CDevice.
   bool write_array(const uint8_t *data, size_t len) {
     if (this->i2c_master_ == nullptr)
       return false;
     return this->i2c_master_->write_array(this->address_, data, len);
   }
 
-  // Helper function to read a single byte from a register.
   bool read_byte(uint8_t reg, uint8_t *data) {
     if (this->i2c_master_ == nullptr)
       return false;
-    // Write the register address with a repeated start.
     if (!this->i2c_master_->write(this->address_, &reg, 1, true))
       return false;
     return this->i2c_master_->read(this->address_, data, 1);
