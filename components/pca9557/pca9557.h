@@ -14,6 +14,11 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
     this->address_ = address; 
   }
 
+  // Add custom set_i2c_master to store the pointer.
+  void set_i2c_master(esphome::i2c::I2CMaster *master) {
+    this->i2c_master_ = master;
+  }
+
   void setup() override {
     esphome::delay(500); // Espera 500ms para dar tiempo a la inicialización del touchpad
     uint8_t config_data[2] = {0x03, 0x00};
@@ -45,7 +50,9 @@ class PCA9557Output : public esphome::i2c::I2CDevice, public esphome::Component,
 
  protected:
   uint8_t address_;
-  // i2c_master_ is inherited from I2CDevice.
+  // Add custom pointer to store the I2C master.
+  esphome::i2c::I2CMaster *i2c_master_ = nullptr;
+
   bool write_array(const uint8_t *data, size_t len) {
     if (this->i2c_master_ == nullptr)
       return false;
