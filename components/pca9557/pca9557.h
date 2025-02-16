@@ -1,11 +1,15 @@
 #include "esphome.h"
+#include "Wire.h"
+#include "esphome/components/output/float_output.h"
 
-class PCA9557Output : public Component, public FloatOutput {
+namespace pca9557 {
+
+class PCA9557Output : public esphome::Component, public esphome::output::FloatOutput {
  public:
   PCA9557Output(uint8_t address = 0x18) : address_(address) {}
 
   void setup() override {
-    delay(500); // Espera 500ms para dar tiempo a la inicialización del touchpad
+    esphome::delay(500); // Espera 500ms para dar tiempo a la inicialización del touchpad
     // Configure all pins as outputs (register 0x03)
     uint8_t config_data[] = {0x03, 0x00};
     if (!Wire.writeBytes(address_, config_data, 2)) {
@@ -47,3 +51,5 @@ class PCA9557Output : public Component, public FloatOutput {
  protected:
   uint8_t address_;
 };
+
+}  // namespace pca9557
