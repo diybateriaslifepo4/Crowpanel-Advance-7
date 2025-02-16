@@ -1,3 +1,10 @@
+// Add forward declaration for I2CMaster
+namespace esphome {
+  namespace i2c {
+    class I2CMaster;
+  }
+}
+
 #include "esphome.h"
 #include "esphome/components/i2c/i2c.h"
 #include "esphome/components/output/float_output.h"
