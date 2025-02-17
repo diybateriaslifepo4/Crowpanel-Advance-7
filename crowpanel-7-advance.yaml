@@ -30,21 +30,14 @@ esphome:
   platformio_options:
     board_build.esp-idf.memory_type: qio_opi
     board_build.flash_mode: dio
-  # on_boot:
-  #   - priority: 600
-  #     then:
-  #       - logger.log: "Scanning I2C bus"
-  #       - i2c.scan:
-  #           then:
-  #             - logger.log: "I2C devices found: ${devices}"
-  #   - priority: 500
-  #     then:
-  #       - logger.log: "Initializing touch first"
-  #       - component.update: touch_gt911
-    # - priority: -100
-    #   then:
-    #     - logger.log: "Initializing backlight"
-    #     - output.turn_on: backlight_output
+  on_boot:
+    - priority: 700
+      # Pulse the reset for the touchpad: active low then high
+      then:
+        - lambda: |-
+            id(touchpad_reset).write_state(0);
+            delay(100);
+            id(touchpad_reset).write_state(1);
 
 web_server:
   port: 80
@@ -82,7 +75,7 @@ touchscreen:
   platform: gt911
   id: touch_gt911
   address: 0x5D
-  reset_pin: GPIO2       # Usar PCA_IO2_TP_RST según el schematic (ajusta si es necesario)
+  # reset_pin removed: se usará el PCA9557 puerto 2
   interrupt_pin: GPIO1   # Usar IO1_TP_INT según el schematic (ajusta si es necesario)
   on_touch:
     then:
@@ -92,6 +85,11 @@ output:
   - platform: pca9557
     id: backlight_output
     address: 0x18
+# Agregar salida para el reset del touchpad en el puerto 2
+  - platform: pca9557
+    id: touchpad_reset
+    address: 0x18
+    port: 2
 
 light:
   - platform: binary
