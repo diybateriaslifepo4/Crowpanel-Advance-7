@@ -21,23 +21,11 @@ captive_portal:
 substitutions:
   device_name: crowpanel-7-advance
 
-external_components:
-  - source: my_components
-    components: [ pca9557 ]
-
 esphome:
   name: ${device_name}
   platformio_options:
     board_build.esp-idf.memory_type: qio_opi
     board_build.flash_mode: dio
-  on_boot:
-    - priority: 700
-      # Pulse the reset for the touchpad: active low then high
-      then:
-        - lambda: |-
-            id(touchpad_reset).write_state(0);
-            delay(100);
-            id(touchpad_reset).write_state(1);
 
 web_server:
   port: 80
@@ -56,6 +44,7 @@ esp32:
       CONFIG_ESP32S3_DATA_CACHE_64KB: y
       CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
       CONFIG_SPIRAM_RODATA: y
+  variant: esp32s3
 
 psram:
   mode: octal
@@ -63,40 +52,48 @@ psram:
 
 logger:
 
-# Define PWM output for backlight (ajusta el pin según tu hardware)
 i2c:
   sda: 15
   scl: 16
-  # scan removed to prevent interferencia con el touchscreen
-  frequency: 100000  # Se reduce de 400000 a 100000 para mayor estabilidad
+  frequency: 400000
+  id: i2c_bus
+
+i2c_device:
+  id: pca9557
+  address: 0x18
+  i2c_id: i2c_bus
+
+output:
+  - platform: template
+    id: backlight_output
+    type: binary
+    write_action:
+      - lambda: |-
+          uint8_t config_reg = 0x03;
+          uint8_t config_data = 0xFD;  // 11111101 (IO1 como salida)
+          id(pca9557).write_byte(config_reg, config_data);
+          delay(10);
+
+          uint8_t output_reg = 0x01;
+          uint8_t output_data = state ? 0x02 : 0x00;  // 00000010 (encender) o 00000000 (apagar)
+          id(pca9557).write_byte(output_reg, output_data);
+
+light:
+  - platform: binary
+    name: "Backlight"
+    output: backlight_output
+    id: backlight
+    restore_mode: ALWAYS_ON
+
 
 # Configure the GT911 touchscreen
 touchscreen:
   platform: gt911
   id: touch_gt911
   address: 0x5D
-  # reset_pin removed: se usará el PCA9557 puerto 2
-  interrupt_pin: GPIO1   # Usar IO1_TP_INT según el schematic (ajusta si es necesario)
   on_touch:
     then:
       - logger.log: "Detectando toque en la pantalla"
-
-output:
-  - platform: pca9557
-    id: backlight_output
-    address: 0x18
-# Agregar salida para el reset del touchpad en el puerto 2
-  - platform: pca9557
-    id: touchpad_reset
-    address: 0x18
-    port: 2
-
-light:
-  - platform: binary
-    output: backlight_output
-    name: ${device_name} Display Backlight
-    id: back_light
-    restore_mode: ALWAYS_ON
 
 display:
   - platform: rpi_dpi_rgb
