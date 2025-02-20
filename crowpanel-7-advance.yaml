@@ -1,17 +1,15 @@
 # Enable Home Assistant API
 api:
   encryption:
-    key: "f29o8Z+EEDuZS1tCF1Tqi6exl1PefuCo9fxce99oeg0="
+    key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 ota:
   - platform: esphome
-    password: "7226b4fa8da5ba6a4275e8eca8feb975"
+    password: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "Crowpanel-7-Advance"
     password: "e0lnnIgp83Fr"
@@ -50,14 +48,19 @@ psram:
   mode: octal
   speed: 80MHz
 
+# Añadido logging para debug
 logger:
-
+  level: DEBUG
+  logs:
+    touch: DEBUG
+    display: DEBUG
 i2c:
   sda: 15
   scl: 16
   frequency: 400000
   id: i2c_bus
 
+# Backlight configuration
 i2c_device:
   id: pca9557
   address: 0x18
@@ -70,12 +73,11 @@ output:
     write_action:
       - lambda: |-
           uint8_t config_reg = 0x03;
-          uint8_t config_data = 0xFD;  // 11111101 (IO1 como salida)
+          uint8_t config_data = 0xFD;
           id(pca9557).write_byte(config_reg, config_data);
           delay(10);
-
           uint8_t output_reg = 0x01;
-          uint8_t output_data = state ? 0x02 : 0x00;  // 00000010 (encender) o 00000000 (apagar)
+          uint8_t output_data = state ? 0x02 : 0x00;
           id(pca9557).write_byte(output_reg, output_data);
 
 light:
@@ -85,200 +87,166 @@ light:
     id: backlight
     restore_mode: ALWAYS_ON
 
-
-# Configure the GT911 touchscreen
 touchscreen:
   platform: gt911
   id: touch_gt911
   address: 0x5D
   on_touch:
     then:
-      - logger.log: "Detectando toque en la pantalla"
+      - logger.log: "Touch detected!"
+
+# [Previous configuration until display section remains the same]
 
 display:
   - platform: rpi_dpi_rgb
     id: my_display
-    color_order: RGB  # Ajusta si los colores se ven incorrectos
-    invert_colors: True
-    update_interval: never
+    color_order: BGR
+    invert_colors: true
+    update_interval: 33ms
     auto_clear_enabled: false
     dimensions:
       width: 800
       height: 480
-    de_pin: 42  # HEN en tu configuración original
-    hsync_pin: 40  # HSYNC
-    vsync_pin: 41  # VSYNC 
-    pclk_pin: 39  # PCLK
-    pclk_frequency: 12MHz  # Puedes ajustar esta frecuencia si es necesario
+    de_pin: 42
+    hsync_pin: 40
+    vsync_pin: 41
+    pclk_pin: 39
+    pclk_frequency: 18MHz
     data_pins:
       red:
-        - 7   # R0
-        - 17  # R1
-        - 18  # R2
-        - 3   # R3
-        - 46  # R4
+        - 7
+        - 17
+        - 18
+        - 3
+        - 46
       green:
-        - 9   # G0
-        - 10  # G1
-        - 11  # G2
-        - 12  # G3
-        - 13  # G4
-        - 14  # G5
+        - 9
+        - 10
+        - 11
+        - 12
+        - 13
+        - 14
       blue:
-        - 21  # D0/B0
-        - 47  # D1/B1
-        - 48  # D2/B2
-        - 45  # D3/B3
-        - 38  # D4/B4
+        - 21
+        - 47
+        - 48
+        - 45
+        - 38
 
-     
-
-# Resto de la configuración LVGL si deseas usarla
 globals:
-  - id: random_int_var
+  - id: counter
     type: int
     restore_value: no
     initial_value: '0'
+  - id: display_text
+    type: std::string
+    restore_value: no
+    initial_value: '"Hello World!"'
 
-binary_sensor:
-  - platform: lvgl
-    widget: button
-    name: Button
-    on_press:
-      then:
-        - lambda: |-
-            id(random_int_var) = (rand() % 20) - 10;
-        - lvgl.indicator.update:
-            id: power_meter_input
-            value: !lambda return id(random_int_var);
-        - lvgl.label.update:
-            id: power_kw
-            text:
-              format: "%dkW"
-              args: [ 'id(random_int_var)' ]
-
-image:
-  - file: mdi:sun-wireless-outline
-    id: solar_power_icon
-    resize: 50x50
-
-# Configuración LVGL (mantiene la misma)
 lvgl:
   color_depth: 16
-  bg_color: 0
+  bg_color: 0x000000
   border_width: 0
-  outline_width: 0
-  shadow_width: 0
-  text_font: unscii_16
-  align: center
+ 
   style_definitions:
-    - id: meter_style
-      border_width: 0
-      outline_width: 0
-      align: center
-      bg_color: 0
-    - id: title_style
+    - id: button_style
+      bg_color: 0x0000FF
+      radius: 20
+      border_width: 2
+      border_color: 0xFFFFFF
+      pad_all: 10
+   
+    - id: label_style
       text_font: MONTSERRAT_40
-      align: center
       text_color: 0xFFFFFF
+      align: TOP_MID
       bg_opa: TRANSP
-      bg_color: 0
-      radius: 4
-      pad_all: 2
-    - id: detail_style
-      text_font: MONTSERRAT_18
-      align: center
+   
+    - id: button_label_style
+      text_font: MONTSERRAT_20
       text_color: 0xFFFFFF
+      align: CENTER
       bg_opa: TRANSP
-      bg_color: 0
-      radius: 4
-      pad_all: 2
+
   widgets:
-    - button:
-        id: button
-        height: 100
-        width: 200
-        x: 20
-        y: 20
-        border_width: 0
-        outline_width: 0
-        align: TOP_LEFT
-        checkable: false
-        widgets:
-        - label:
-            align: center
-            text: "Button"
     - obj:
-        height: 240
-        width: 240
-        bg_color: 0
+        id: main_panel
+        x: 0
+        y: 0
+        width: 800
+        height: 480
+        bg_color: 0x000000
         border_width: 0
-        outline_width: 0
-        shadow_width: 0
-        pad_all: 4
-        align: TOP_MID
+        scrollable: false
+        scrollbar_mode: "OFF"
+        overflow_visible: false
         widgets:
-          - meter:
-              height: 100%
-              width: 100%
-              border_width: 0
-              outline_width: 0
-              align: center
-              bg_color: 0
-              scales:
-                angle_range: 180
-                range_to: 10
-                range_from: -10
-                ticks:
-                  count: 0
-                indicators:
-                  - line:
-                      id: power_meter_input
-                      width: 8
-                      color: 0xFFFFFF
-                      r_mod: 12
-                      value: 50
-                  - arc:
-                      color: 0xFF3000
-                      r_mod: 10
-                      width: 20
-                      start_value: -10
-                      end_value: 0
-                  - arc:
-                      color: 0x00FF00
-                      r_mod: 10
-                      width: 20
-                      start_value: 0
-                      end_value: 10
-          - arc:
-              height: 160
-              width: 160
-              align: center
-              arc_color: 0x000000
-              arc_width: 150
-              start_angle: 0
-              end_angle: 360
-              indicator:
-                arc_width: 150
-                arc_color: 0x000000
           - label:
-              styles: detail_style
-              y: 8
-              x: -99
-              text: "-10"
+              id: main_title
+              styles: label_style
+              width: 800
+              height: 60
+              align: TOP_MID
+              text: !lambda 'return id(display_text);'
+          
           - label:
-              styles: detail_style
-              y: 8
-              x: 99
-              text: "+10"
-          - label:
-              styles: title_style
-              id: power_kw
-              y: -10
-          - image:
-              src: solar_power_icon
-              id: img_solar_power
-              align: center
-              image_recolor: 0xFFFF00
-              image_recolor_opa: 100%
-              y: 50
+              id: counter_display
+              styles: label_style
+              width: 800
+              height: 60
+              align: CENTER
+              text: !lambda 'return "Counter: " + std::to_string(id(counter));'
+          
+          - button:
+              id: increment_btn
+              width: 150
+              height: 60
+              align: BOTTOM_LEFT
+              x: 100  # offset desde la posición de alineación
+              y: -100 # offset negativo desde abajo
+              styles: button_style
+              on_press:
+                then:
+                  - lambda: |-
+                      id(counter)++;
+                      lv_label_set_text(id(counter_display), ("Counter: " + std::to_string(id(counter))).c_str());
+              widgets:
+                - label:
+                    styles: button_label_style
+                    text: "+"
+          
+          - button:
+              id: decrement_btn
+              width: 150
+              height: 60
+              align: BOTTOM_RIGHT
+              x: -100  # offset negativo desde la derecha
+              y: -100  # offset negativo desde abajo
+              styles: button_style
+              on_press:
+                then:
+                  - lambda: |-
+                      id(counter)--;
+                      lv_label_set_text(id(counter_display), ("Counter: " + std::to_string(id(counter))).c_str());
+              widgets:
+                - label:
+                    styles: button_label_style
+                    text: "-"
+          
+          - button:
+              id: reset_btn
+              width: 150
+              height: 60
+              align: BOTTOM_MID
+              y: -20  # pequeño offset desde abajo
+              styles: button_style
+              on_press:
+                then:
+                  - lambda: |-
+                      id(counter) = 0;
+                      id(display_text) = "Hello World!";
+                      lv_label_set_text(id(counter_display), ("Counter: " + std::to_string(id(counter))).c_str());
+              widgets:
+                - label:
+                    styles: button_label_style
+                    text: "Reset"
