@@ -1,11 +1,11 @@
 # Enable Home Assistant API
 api:
   encryption:
-    key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    key: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 ota:
   - platform: esphome
-    password: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    password: "xxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 wifi:
   ssid: !secret wifi_ssid
@@ -87,20 +87,10 @@ light:
     id: backlight
     restore_mode: ALWAYS_ON
 
-touchscreen:
-  platform: gt911
-  id: touch_gt911
-  address: 0x5D
-  on_touch:
-    then:
-      - logger.log: "Touch detected!"
-
-# [Previous configuration until display section remains the same]
-
 display:
   - platform: rpi_dpi_rgb
     id: my_display
-    color_order: BGR
+    color_order: RGB
     invert_colors: true
     update_interval: 33ms
     auto_clear_enabled: false
@@ -133,6 +123,16 @@ display:
         - 45
         - 38
 
+touchscreen:
+  platform: gt911
+  id: touch_gt911
+  address: 0x5D
+  on_touch:
+    then:
+      - lambda: |-
+          std::string coords = "Touch detected!";
+          lv_label_set_text(id(touch_coords), coords.c_str());
+
 globals:
   - id: counter
     type: int
@@ -142,6 +142,8 @@ globals:
     type: std::string
     restore_value: no
     initial_value: '"Hello World!"'
+
+# [Previous configuration until lvgl section remains the same]
 
 lvgl:
   color_depth: 16
@@ -159,11 +161,24 @@ lvgl:
     - id: label_style
       text_font: MONTSERRAT_40
       text_color: 0xFFFFFF
-      align: TOP_MID
+      align: CENTER
       bg_opa: TRANSP
    
     - id: button_label_style
       text_font: MONTSERRAT_20
+      text_color: 0xFFFFFF
+      align: CENTER
+      bg_opa: TRANSP
+    
+    - id: color_box_style
+      width: 120
+      height: 100  # Increased height to accommodate label
+      radius: 10
+      border_width: 1
+      border_color: 0xFFFFFF
+
+    - id: color_label_style
+      text_font: MONTSERRAT_16
       text_color: 0xFFFFFF
       align: CENTER
       bg_opa: TRANSP
@@ -185,9 +200,105 @@ lvgl:
               id: main_title
               styles: label_style
               width: 800
-              height: 60
+              height: 40
               align: TOP_MID
               text: !lambda 'return id(display_text);'
+          
+          # Color test pattern
+          - obj:
+              id: color_pattern
+              width: 800
+              height: 120
+              align: TOP_MID
+              y: 50
+              scrollable: false
+              scrollbar_mode: "OFF"
+              widgets:
+                # Red
+                - obj:
+                    styles: color_box_style
+                    align: LEFT_MID
+                    x: 5
+                    bg_color: 0xFF0000
+                    scrollable: false
+                    scrollbar_mode: "OFF"
+                    widgets:
+                      - label:
+                          styles: color_label_style
+                          align: BOTTOM_MID
+                          y: -10
+                          text: "RED"
+                # Green
+                - obj:
+                    styles: color_box_style
+                    align: LEFT_MID
+                    x: 135
+                    bg_color: 0x00FF00
+                    scrollable: false
+                    scrollbar_mode: "OFF"
+                    widgets:
+                      - label:
+                          styles: color_label_style
+                          align: BOTTOM_MID
+                          y: -10
+                          text: "GREEN"
+                # Blue
+                - obj:
+                    styles: color_box_style
+                    align: LEFT_MID
+                    x: 265
+                    bg_color: 0x0000FF
+                    scrollable: false
+                    scrollbar_mode: "OFF"
+                    widgets:
+                      - label:
+                          styles: color_label_style
+                          align: BOTTOM_MID
+                          y: -10
+                          text: "BLUE"
+                # Yellow
+                - obj:
+                    styles: color_box_style
+                    align: LEFT_MID
+                    x: 395
+                    bg_color: 0xFFFF00
+                    scrollable: false
+                    scrollbar_mode: "OFF"
+                    widgets:
+                      - label:
+                          styles: color_label_style
+                          align: BOTTOM_MID
+                          y: -10
+                          text: "YELLOW"
+                # Magenta
+                - obj:
+                    styles: color_box_style
+                    align: LEFT_MID
+                    x: 525
+                    bg_color: 0xFF00FF
+                    scrollable: false
+                    scrollbar_mode: "OFF"
+                    widgets:
+                      - label:
+                          styles: color_label_style
+                          align: BOTTOM_MID
+                          y: -10
+                          text: "MAGENTA"
+                # Cyan
+                - obj:
+                    styles: color_box_style
+                    align: LEFT_MID
+                    x: 655
+                    bg_color: 0x00FFFF
+                    scrollable: false
+                    scrollbar_mode: "OFF"
+                    widgets:
+                      - label:
+                          styles: color_label_style
+                          align: BOTTOM_MID
+                          y: -10
+                          text: "CYAN"
+
           
           - label:
               id: counter_display
@@ -197,13 +308,23 @@ lvgl:
               align: CENTER
               text: !lambda 'return "Counter: " + std::to_string(id(counter));'
           
+          # Rest of the configuration remains unchanged
+          - label:
+              id: touch_coords
+              styles: button_label_style
+              width: 800
+              height: 30
+              align: CENTER
+              y: 200
+              text: "Touch coordinates will appear here"
+          
           - button:
               id: increment_btn
               width: 150
               height: 60
               align: BOTTOM_LEFT
-              x: 100  # offset desde la posición de alineación
-              y: -100 # offset negativo desde abajo
+              x: 100
+              y: -50
               styles: button_style
               on_press:
                 then:
@@ -220,8 +341,8 @@ lvgl:
               width: 150
               height: 60
               align: BOTTOM_RIGHT
-              x: -100  # offset negativo desde la derecha
-              y: -100  # offset negativo desde abajo
+              x: -100
+              y: -50
               styles: button_style
               on_press:
                 then:
@@ -238,7 +359,7 @@ lvgl:
               width: 150
               height: 60
               align: BOTTOM_MID
-              y: -20  # pequeño offset desde abajo
+              y: -50
               styles: button_style
               on_press:
                 then:
